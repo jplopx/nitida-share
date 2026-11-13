@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b0d16">
+  <meta name="description" content="Nítida: compartilhamento de tela com qualidade, áudio opcional e convites privados.">
+  <title>Nítida — Mostre cada detalhe.</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/socket.io/socket.io.js" defer></script>
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <div class="noise" aria-hidden="true"></div>
+  <div id="authView" class="auth-layout hidden">
+    <section class="auth-brand">
+      <div class="wordmark"><span class="logo-mark" aria-hidden="true">◈</span> nítida<span class="wordmark-period">.</span></div>
+      <div class="auth-intro">
+        <p class="eyebrow"><span class="pulse-dot"></span> A SUA TELA. SEM DISTRAÇÕES.</p>
+        <h1>Mostre<br><em>cada detalhe.</em></h1>
+        <p>Compartilhe sua tela em alta qualidade, com o áudio do computador quando você quiser. Simples assim.</p>
+        <div class="quality-pills"><span>480p · 30</span><span>720p · 60</span><span>1080p · 60</span></div>
+      </div>
+      <div class="auth-art" aria-hidden="true">
+        <div class="art-glow"></div><div class="art-monitor"><div class="art-toolbar"><span></span><span></span><span></span><i>LIVE / SCREEN</i></div><div class="art-content"><div class="art-card a"></div><div class="art-card b"></div><div class="art-card c"></div></div><div class="art-bottom"><b>●</b> HIGH DEFINITION <span>60 FPS</span></div></div>
+      </div>
+      <p class="auth-footer">PRIVADO POR LINK · SEM CHAT · SEM MICROFONE</p>
+    </section>
+    <section class="auth-right">
+      <div class="auth-form-wrap">
+        <div class="mobile-brand wordmark"><span class="logo-mark">◈</span> nítida<span class="wordmark-period">.</span></div>
+        <div id="authInviteHint" class="invite-hint hidden">✦ Você recebeu um link para uma sala. Entre para assistir.</div>
+        <p class="eyebrow grey">SEJA BEM-VINDO</p>
+        <h2>Entre no seu espaço.</h2>
+        <p class="subhead">O próximo frame começa aqui.</p>
+        <div class="auth-tabs" role="tablist" aria-label="Opções de entrada">
+          <button type="button" class="auth-tab active" data-auth-tab="login" aria-selected="true">Entrar</button>
+          <button type="button" class="auth-tab" data-auth-tab="register" aria-selected="false">Criar conta</button>
+          <button type="button" class="auth-tab" data-auth-tab="guest" aria-selected="false">Convidado</button>
+        </div>
+        <form id="loginForm" class="form-stack">
+          <label>Usuário ou e-mail<input type="text" name="identity" placeholder="seu.usuario" autocomplete="username" required></label>
+          <label>Senha<input type="password" name="password" placeholder="Sua senha" autocomplete="current-password" required></label>
+          <button type="submit" class="btn btn-primary btn-wide">Entrar na Nítida <span>↗</span></button>
+        </form>
+        <form id="registerForm" class="form-stack hidden">
+          <label>Nome de usuário<input type="text" name="username" placeholder="ex: joaodev" minlength="3" maxlength="20" pattern="[A-Za-z0-9_.-]{3,20}" autocomplete="username" required></label>
+          <label>E-mail<input type="email" name="email" placeholder="voce@email.com" maxlength="120" autocomplete="email" required></label>
+          <label>Senha<input type="password" name="password" placeholder="Pelo menos 8 caracteres" minlength="8" maxlength="128" autocomplete="new-password" required></label>
+          <button type="submit" class="btn btn-primary btn-wide">Criar minha conta <span>↗</span></button>
+        </form>
+        <form id="guestForm" class="form-stack hidden">
+          <div class="guest-info"><span class="info-icon">✦</span><div><strong>Entre sem criar uma conta</strong><p>Crie uma sala ou acesse pelo link. A lista de amizades fica disponível para contas cadastradas.</p></div></div>
+          <label>Como podemos te chamar? <small>(opcional)</small><input type="text" name="displayName" maxlength="26" placeholder="Seu nome"></label>
+          <button type="submit" class="btn btn-primary btn-wide">Continuar como convidado <span>↗</span></button>
+        </form>
+        <p class="privacy-note">A captura da sua tela só começa quando você autoriza no navegador.</p>
+      </div>
+    </section>
+  </div>
+
+  <div id="appView" class="app-shell hidden">
+    <header class="topbar">
+      <div class="wordmark"><span class="logo-mark" aria-hidden="true">◈</span> nítida<span class="wordmark-period">.</span><span class="logo-suffix">SHARE</span></div>
+      <div class="topbar-middle"><span class="status-dot"></span> UM LUGAR PARA MOSTRAR, NÃO PARA FALAR.</div>
+      <div class="account-area"><div id="accountAvatar" class="avatar">N</div><div class="account-copy"><strong id="accountName">Conta</strong><small id="accountType">Usuário</small></div><button type="button" id="logoutButton" class="icon-button" title="Sair da conta" aria-label="Sair da conta">↪</button></div>
+    </header>
+    <div class="app-grid">
+      <aside class="sidebar">
+        <div class="side-title"><p class="eyebrow grey">SEU ESPAÇO</p><div class="side-navigation"><span class="side-nav-icon">▦</span> Painel <span class="side-nav-caption">HOME</span></div></div>
+        <div id="socialSection" class="social-section">
+          <div class="side-heading"><h3>Amizades</h3><span id="friendsCount" class="pill-count">0</span></div>
+          <form id="friendSearchForm" class="add-friend-form"><input id="friendUsername" aria-label="Nome de usuário para adicionar" placeholder="Adicionar por @usuário" maxlength="20" required><button type="submit" aria-label="Enviar pedido de amizade" title="Enviar pedido de amizade">+</button></form>
+          <div id="friendList" class="list-content"></div>
+          <div class="side-heading with-border"><h3>Pedidos</h3><span id="requestsCount" class="pill-count">0</span></div>
+          <div id="requestsList" class="list-content"></div>
+          <div class="side-heading with-border"><h3>Convites para salas</h3><span id="invitesCount" class="pill-count">0</span></div>
+          <div id="invitesList" class="list-content"></div>
+        </div>
+        <div id="guestSocial" class="guest-social hidden"><div class="guest-social-icon">✳</div><h3>Mais perto de quem importa.</h3><p>Crie uma conta para adicionar amizades e convidá-las com um clique.</p><button class="btn btn-subtle btn-wide" id="guestUpgrade">Criar conta</button></div>
+        <div class="sidebar-bottom"><div class="signal-icon">▥</div><div><strong>Imagem em primeiro lugar.</strong><p>Transmissão P2P com ajustes de bitrate e resolução.</p></div></div>
+      </aside>
+      <main class="content">
+        <section id="homePanel" class="home-panel">
+          <div class="page-heading"><div><p class="eyebrow">SEU PAINEL</p><h1>Seu espaço para <em>compartilhar.</em></h1><p>Sem salas cheias de recursos. Apenas sua tela, com a qualidade que ela merece.</p></div><span class="heading-star" aria-hidden="true">✳</span></div>
+          <div class="hero-card"><div class="hero-card-content"><span class="eyebrow hero-kicker"><span class="green-light"></span> PRONTO PARA TRANSMITIR</span><h2>Uma tela.<br><em>Infinitos detalhes.</em></h2><p>Crie sua sala, escolha a qualidade e envie o link. A experiência é sua.</p><button id="createRoomButton" class="btn btn-primary btn-hero">+ Criar sala de transmissão <span>↗</span></button><span class="hero-fineprint">✧ Sem instalação. Sem conversas. Sem complicação.</span></div><div class="hero-visual" aria-hidden="true"><div class="hero-ring ring-one"></div><div class="hero-ring ring-two"></div><div class="hero-center">◈</div><div class="floating-badge badge-top"><span class="green-light"></span> LIVE READY</div><div class="floating-badge badge-bottom">1080p <span>/</span> 60 FPS</div></div></div>
+          <div class="section-intro"><h2>Por que Nítida?</h2><p>O essencial, levado a sério.</p></div>
+          <div class="benefit-grid"><div class="benefit-card"><span class="benefit-icon">◉</span><h3>Resolução à sua escolha</h3><p>Do 480p ao Full HD, com opções de 30 e 60 quadros por segundo.</p></div><div class="benefit-card"><span class="benefit-icon">♫</span><h3>Áudio, se você quiser</h3><p>Compartilhe o som da aba ou do sistema quando seu navegador permitir.</p></div><div class="benefit-card"><span class="benefit-icon">↗</span><h3>Convites sem atrito</h3><p>Envie um link privado ou convide alguém da sua lista de amizades.</p></div></div>
+          <div class="soft-note"><span>ⓘ</span> Para criar transmissões, use um navegador de computador. No celular, a visualização depende do suporte a WebRTC.</div>
+        </section>
+        <section id="roomPanel" class="room-panel hidden">
+          <div class="room-header"><div><button type="button" id="backButton" class="back-link">← Voltar ao painel</button><p class="eyebrow">SALA PRIVADA</p><h1>Sala de transmissão <span class="live-tag"><span class="pulse-dot"></span> <span id="roomLiveBadge">PRIVADA</span></span></h1><p id="roomDescription">Compartilhe o link e comece quando quiser.</p></div><button id="closeRoomButton" type="button" class="btn btn-outline-danger hidden">Encerrar sala</button></div>
+          <div class="room-link-bar"><span class="room-link-icon">↗</span><div class="room-link-copy"><strong>Link de convite</strong><input id="roomLink" aria-label="Link da sala" readonly></div><button id="copyLinkButton" type="button" class="btn btn-secondary">Copiar link <span>⧉</span></button></div>
+          <div id="videoStage" class="video-stage"><video id="localVideo" class="stage-video hidden" autoplay muted playsinline></video><video id="remoteVideo" class="stage-video hidden" autoplay muted playsinline></video><div id="videoPlaceholder" class="video-placeholder"><div class="placeholder-orbit"><span>◈</span></div><h2 id="placeholderTitle">A tela está em branco.</h2><p id="placeholderSubtitle">Escolha as opções abaixo e comece a transmitir.</p></div><div class="video-corner-label"><span class="pulse-dot"></span><span id="videoStageStatus">EM ESPERA</span></div><button type="button" id="fullscreenButton" class="stage-fullscreen" title="Tela cheia" aria-label="Tela cheia">⛶</button><button type="button" id="playAudioButton" class="btn btn-primary audio-unlock hidden">♫ Ativar áudio da transmissão</button></div>
+          <div class="stream-controls"><div class="controls-heading"><div><p class="eyebrow grey">CENTRAL DE TRANSMISSÃO</p><h2>Controle cada frame.</h2></div><div class="control-state"><span id="roomLiveDot" class="state-indicator"></span><span id="roomLiveText">Aguardando</span></div></div><div class="settings-grid"><label class="setting-field">Qualidade da imagem<select id="qualityPreset"><option value="480p30">480p · 30 FPS</option><option value="720p30">720p · 30 FPS</option><option value="720p60">720p · 60 FPS</option><option value="1080p30">1080p · 30 FPS</option><option value="1080p60">1080p · 60 FPS</option></select></label><label class="audio-setting"><span class="audio-setting-icon">♫</span><span class="audio-setting-copy"><strong>Áudio do computador</strong><small>Opcional · nunca usa o microfone</small></span><input id="shareAudio" type="checkbox" role="switch"><span class="toggle-track" aria-hidden="true"></span></label></div><div class="settings-actions"><button type="button" id="startShareButton" class="btn btn-primary"><span>◎</span> Iniciar transmissão</button><button type="button" id="stopShareButton" class="btn btn-danger hidden">■ Parar transmissão</button><p id="qualityNote">Escolha a qualidade antes de compartilhar. O navegador e a rede determinam o resultado real.</p></div><div class="stats-row"><div><span>QUALIDADE CAPTURADA</span><strong id="statResolution">—</strong></div><div><span>FPS REAL / ESTIMADO</span><strong id="statFps">—</strong></div><div><span>TAXA DE DADOS</span><strong id="statBitrate">—</strong></div><div><span>PARTICIPANTES</span><strong id="statParticipants">0</strong></div></div></div>
+          <div class="room-people"><div><h3>Na sala agora</h3><p>Até <span id="maxParticipants">4</span> participantes, para priorizar a nitidez.</p></div><div id="participantsList" class="participants-list"></div></div>
+        </section>
+      </main>
+    </div>
+  </div>
+  <div id="toastRegion" class="toast-region" aria-live="polite" aria-atomic="false"></div>
+</body>
+</html>

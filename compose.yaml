@@ -1,0 +1,20 @@
+services:
+  nitida:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      APP_ORIGIN: ${APP_ORIGIN:-}
+      PORT: 3000
+      DB_FILE: /app/data/nitida.sqlite
+      MAX_ROOM_PARTICIPANTS: ${MAX_ROOM_PARTICIPANTS:-4}
+      STUN_URL: ${STUN_URL:-stun:stun.l.google.com:19302}
+      TURN_URL: ${TURN_URL:-}
+      TURN_USERNAME: ${TURN_USERNAME:-}
+      TURN_CREDENTIAL: ${TURN_CREDENTIAL:-}
+    volumes:
+      - nitida_data:/app/data
+volumes:
+  nitida_data:
