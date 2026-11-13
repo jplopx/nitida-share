@@ -3,16 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#0b0d16">
+  <meta name="theme-color" content="#0b111b">
   <meta name="description" content="Nítida: compartilhamento de tela com qualidade, áudio opcional e convites privados.">
   <title>Nítida — Mostre cada detalhe.</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/refine.css">
   <script src="/socket.io/socket.io.js" defer></script>
   <script src="/app.js" defer></script>
+  <script src="/navigation.js" defer></script>
 </head>
 <body>
   <div class="noise" aria-hidden="true"></div>
+  <div class="ambient-background" aria-hidden="true"></div>
   <div id="authView" class="auth-layout hidden">
     <section class="auth-brand">
       <div class="wordmark"><span class="logo-mark" aria-hidden="true">◈</span> nítida<span class="wordmark-period">.</span></div>
@@ -63,11 +66,12 @@
   <div id="appView" class="app-shell hidden">
     <header class="topbar">
       <div class="wordmark"><span class="logo-mark" aria-hidden="true">◈</span> nítida<span class="wordmark-period">.</span><span class="logo-suffix">SHARE</span></div>
-      <div class="topbar-middle"><span class="status-dot"></span> UM LUGAR PARA MOSTRAR, NÃO PARA FALAR.</div>
-      <div class="account-area"><div id="accountAvatar" class="avatar">N</div><div class="account-copy"><strong id="accountName">Conta</strong><small id="accountType">Usuário</small></div><button type="button" id="logoutButton" class="icon-button" title="Sair da conta" aria-label="Sair da conta">↪</button></div>
+      <div class="topbar-middle"><span class="status-dot"></span> Compartilhamento de tela, sem distrações</div>
+      <div class="account-area"><button type="button" id="mobileFriendsButton" class="mobile-friends-button" aria-controls="sidePanel" aria-expanded="false" aria-label="Abrir amizades e convites"><span aria-hidden="true">♧</span><span>Amigos</span></button><div id="accountAvatar" class="avatar">N</div><div class="account-copy"><strong id="accountName">Conta</strong><small id="accountType">Usuário</small></div><button type="button" id="logoutButton" class="icon-button" title="Sair da conta" aria-label="Sair da conta">↪</button></div>
     </header>
     <div class="app-grid">
-      <aside class="sidebar">
+      <aside class="sidebar" id="sidePanel" aria-label="Amizades, pedidos e convites">
+        <div class="mobile-side-heading"><div><strong>Amizades e convites</strong><p>Fique por perto de quem você compartilha.</p></div><button type="button" id="closeSidebarButton" aria-label="Fechar painel de amizades">✕</button></div>
         <div class="side-title"><p class="eyebrow grey">SEU ESPAÇO</p><div class="side-navigation"><span class="side-nav-icon">▦</span> Painel <span class="side-nav-caption">HOME</span></div></div>
         <div id="socialSection" class="social-section">
           <div class="side-heading"><h3>Amizades</h3><span id="friendsCount" class="pill-count">0</span></div>
@@ -81,24 +85,30 @@
         <div id="guestSocial" class="guest-social hidden"><div class="guest-social-icon">✳</div><h3>Mais perto de quem importa.</h3><p>Crie uma conta para adicionar amizades e convidá-las com um clique.</p><button class="btn btn-subtle btn-wide" id="guestUpgrade">Criar conta</button></div>
         <div class="sidebar-bottom"><div class="signal-icon">▥</div><div><strong>Imagem em primeiro lugar.</strong><p>Transmissão P2P com ajustes de bitrate e resolução.</p></div></div>
       </aside>
-      <main class="content">
+      <main class="content" id="mainContent">
         <section id="homePanel" class="home-panel">
-          <div class="page-heading"><div><p class="eyebrow">SEU PAINEL</p><h1>Seu espaço para <em>compartilhar.</em></h1><p>Sem salas cheias de recursos. Apenas sua tela, com a qualidade que ela merece.</p></div><span class="heading-star" aria-hidden="true">✳</span></div>
-          <div class="hero-card"><div class="hero-card-content"><span class="eyebrow hero-kicker"><span class="green-light"></span> PRONTO PARA TRANSMITIR</span><h2>Uma tela.<br><em>Infinitos detalhes.</em></h2><p>Crie sua sala, escolha a qualidade e envie o link. A experiência é sua.</p><button id="createRoomButton" class="btn btn-primary btn-hero">+ Criar sala de transmissão <span>↗</span></button><span class="hero-fineprint">✧ Sem instalação. Sem conversas. Sem complicação.</span></div><div class="hero-visual" aria-hidden="true"><div class="hero-ring ring-one"></div><div class="hero-ring ring-two"></div><div class="hero-center">◈</div><div class="floating-badge badge-top"><span class="green-light"></span> LIVE READY</div><div class="floating-badge badge-bottom">1080p <span>/</span> 60 FPS</div></div></div>
-          <div class="section-intro"><h2>Por que Nítida?</h2><p>O essencial, levado a sério.</p></div>
+          <div class="page-heading"><div><p class="eyebrow">INÍCIO</p><h1>Compartilhar ficou <em>simples.</em></h1><p>Crie uma sala, envie um link e mostre o que está na sua tela. Sem chamadas, sem chat, sem complicação.</p></div><span class="heading-star" aria-hidden="true">✳</span></div>
+          <div class="hero-card"><div class="hero-card-content"><span class="eyebrow hero-kicker"><span class="green-light"></span> PRONTO PARA TRANSMITIR</span><h2>Sua tela,
+<br><em>em destaque.</em></h2><p>Escolha a resolução, decida se quer incluir áudio e convide quem quiser.</p><button id="createRoomButton" class="btn btn-primary btn-hero">Criar uma sala <span>↗</span></button><span class="hero-fineprint">Sem instalação · Convite por link · Áudio opcional</span></div><div class="hero-visual" aria-hidden="true"><div class="hero-ring ring-one"></div><div class="hero-ring ring-two"></div><div class="hero-center">◈</div><div class="floating-badge badge-top"><span class="green-light"></span> LIVE READY</div><div class="floating-badge badge-bottom">1080p <span>/</span> 60 FPS</div></div></div>
+          <div class="section-intro"><h2>Tudo que você precisa</h2><p>Uma experiência direta do início ao fim.</p></div>
           <div class="benefit-grid"><div class="benefit-card"><span class="benefit-icon">◉</span><h3>Resolução à sua escolha</h3><p>Do 480p ao Full HD, com opções de 30 e 60 quadros por segundo.</p></div><div class="benefit-card"><span class="benefit-icon">♫</span><h3>Áudio, se você quiser</h3><p>Compartilhe o som da aba ou do sistema quando seu navegador permitir.</p></div><div class="benefit-card"><span class="benefit-icon">↗</span><h3>Convites sem atrito</h3><p>Envie um link privado ou convide alguém da sua lista de amizades.</p></div></div>
-          <div class="soft-note"><span>ⓘ</span> Para criar transmissões, use um navegador de computador. No celular, a visualização depende do suporte a WebRTC.</div>
+          <div class="soft-note"><span>ⓘ</span> No computador você pode transmitir sua tela. No iPhone, a captura pelo navegador pode parar ao trocar de aplicativo; assistir funciona conforme o navegador e a rede.</div>
         </section>
         <section id="roomPanel" class="room-panel hidden">
           <div class="room-header"><div><button type="button" id="backButton" class="back-link">← Voltar ao painel</button><p class="eyebrow">SALA PRIVADA</p><h1>Sala de transmissão <span class="live-tag"><span class="pulse-dot"></span> <span id="roomLiveBadge">PRIVADA</span></span></h1><p id="roomDescription">Compartilhe o link e comece quando quiser.</p></div><button id="closeRoomButton" type="button" class="btn btn-outline-danger hidden">Encerrar sala</button></div>
           <div class="room-link-bar"><span class="room-link-icon">↗</span><div class="room-link-copy"><strong>Link de convite</strong><input id="roomLink" aria-label="Link da sala" readonly></div><button id="copyLinkButton" type="button" class="btn btn-secondary">Copiar link <span>⧉</span></button></div>
-          <div id="videoStage" class="video-stage"><video id="localVideo" class="stage-video hidden" autoplay muted playsinline></video><video id="remoteVideo" class="stage-video hidden" autoplay muted playsinline></video><div id="videoPlaceholder" class="video-placeholder"><div class="placeholder-orbit"><span>◈</span></div><h2 id="placeholderTitle">A tela está em branco.</h2><p id="placeholderSubtitle">Escolha as opções abaixo e comece a transmitir.</p></div><div class="video-corner-label"><span class="pulse-dot"></span><span id="videoStageStatus">EM ESPERA</span></div><button type="button" id="fullscreenButton" class="stage-fullscreen" title="Tela cheia" aria-label="Tela cheia">⛶</button><button type="button" id="playAudioButton" class="btn btn-primary audio-unlock hidden">♫ Ativar áudio da transmissão</button></div>
-          <div class="stream-controls"><div class="controls-heading"><div><p class="eyebrow grey">CENTRAL DE TRANSMISSÃO</p><h2>Controle cada frame.</h2></div><div class="control-state"><span id="roomLiveDot" class="state-indicator"></span><span id="roomLiveText">Aguardando</span></div></div><div class="settings-grid"><label class="setting-field">Qualidade da imagem<select id="qualityPreset"><option value="480p30">480p · 30 FPS</option><option value="720p30">720p · 30 FPS</option><option value="720p60">720p · 60 FPS</option><option value="1080p30">1080p · 30 FPS</option><option value="1080p60">1080p · 60 FPS</option></select></label><label class="audio-setting"><span class="audio-setting-icon">♫</span><span class="audio-setting-copy"><strong>Áudio do computador</strong><small>Opcional · nunca usa o microfone</small></span><input id="shareAudio" type="checkbox" role="switch"><span class="toggle-track" aria-hidden="true"></span></label></div><div class="settings-actions"><button type="button" id="startShareButton" class="btn btn-primary"><span>◎</span> Iniciar transmissão</button><button type="button" id="stopShareButton" class="btn btn-danger hidden">■ Parar transmissão</button><p id="qualityNote">Escolha a qualidade antes de compartilhar. O navegador e a rede determinam o resultado real.</p></div><div class="stats-row"><div><span>QUALIDADE CAPTURADA</span><strong id="statResolution">—</strong></div><div><span>FPS REAL / ESTIMADO</span><strong id="statFps">—</strong></div><div><span>TAXA DE DADOS</span><strong id="statBitrate">—</strong></div><div><span>PARTICIPANTES</span><strong id="statParticipants">0</strong></div></div></div>
+          <div id="videoStage" class="video-stage"><video id="localVideo" class="stage-video hidden" autoplay muted playsinline></video><video id="remoteVideo" class="stage-video hidden" autoplay muted playsinline></video><div id="videoPlaceholder" class="video-placeholder"><div class="placeholder-orbit"><span>◈</span></div><h2 id="placeholderTitle">Pronto para compartilhar</h2><p id="placeholderSubtitle">Configure sua transmissão e use o botão Iniciar transmissão.</p></div><div class="video-corner-label"><span class="pulse-dot"></span><span id="videoStageStatus">EM ESPERA</span></div><button type="button" id="fullscreenButton" class="stage-fullscreen" title="Tela cheia" aria-label="Tela cheia">⛶</button><button type="button" id="playAudioButton" class="btn btn-primary audio-unlock hidden">♫ Ativar áudio da transmissão</button></div>
+          <div class="stream-controls"><div class="controls-heading"><div><p class="eyebrow grey">CENTRAL DE TRANSMISSÃO</p><h2>Sua transmissão, do seu jeito.</h2></div><div class="control-state"><span id="roomLiveDot" class="state-indicator"></span><span id="roomLiveText">Aguardando</span></div></div><div class="settings-grid"><label class="setting-field">Resolução e fluidez<select id="qualityPreset"><option value="480p30">480p · 30 FPS</option><option value="720p30">720p · 30 FPS</option><option value="720p60">720p · 60 FPS</option><option value="1080p30">1080p · 30 FPS</option><option value="1080p60">1080p · 60 FPS</option></select></label><label class="audio-setting"><span class="audio-setting-icon">♫</span><span class="audio-setting-copy"><strong>Áudio do computador</strong><small>Opcional · nunca usa o microfone</small></span><input id="shareAudio" type="checkbox" role="switch"><span class="toggle-track" aria-hidden="true"></span></label></div><div class="settings-actions"><button type="button" id="startShareButton" class="btn btn-primary"><span>◎</span> Iniciar transmissão</button><button type="button" id="stopShareButton" class="btn btn-danger hidden">■ Parar transmissão</button><p id="qualityNote">Escolha a qualidade antes de compartilhar. O navegador e a rede determinam o resultado real.</p></div><div class="stats-row"><div><span>QUALIDADE CAPTURADA</span><strong id="statResolution">—</strong></div><div><span>FPS REAL / ESTIMADO</span><strong id="statFps">—</strong></div><div><span>TAXA DE DADOS</span><strong id="statBitrate">—</strong></div><div><span>PARTICIPANTES</span><strong id="statParticipants">0</strong></div></div></div>
           <div class="room-people"><div><h3>Na sala agora</h3><p>Até <span id="maxParticipants">4</span> participantes, para priorizar a nitidez.</p></div><div id="participantsList" class="participants-list"></div></div>
         </section>
       </main>
     </div>
   </div>
+  <div id="mobileSidebarBackdrop" class="mobile-backdrop" hidden></div>
+  <nav id="mobileNav" class="mobile-nav" aria-label="Navegação no celular">
+    <button type="button" id="mobileHomeNav" class="mobile-nav-action selected" aria-label="Ir para painel"><span aria-hidden="true">⌂</span><small>Painel</small></button>
+    <button type="button" id="mobilePeopleNav" class="mobile-nav-action" aria-label="Abrir amizades e convites"><span aria-hidden="true">♧</span><small>Amizades</small><i id="mobileSocialDot" aria-hidden="true"></i></button>
+  </nav>
   <div id="toastRegion" class="toast-region" aria-live="polite" aria-atomic="false"></div>
 </body>
 </html>
