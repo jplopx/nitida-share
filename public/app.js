@@ -272,23 +272,40 @@ function connectSocket() {
     });
     socket.on('disconnect', () => {
       if (!state.room) return;
+      // A conexão de sinalização pode cair ao minimizar a janela ou trocar de rede.
+      // Preservar a captura: desligar as tracks aqui faria o usuário autorizar a tela novamente.
       clearPeers();
-      if (state.localStream) disposeLocalStream();
       resetRemoteVideo();
       state.activeSharerId = null;
       renderVideoState();
-      notify('A conexão foi interrompida. A sala será reconectada automaticamente.', 'error');
+      notify('Conexão temporariamente interrompida. Tentando restaurar a transmissão...', 'info');
     });
     socket.on('connect', async () => {
-      // Ao reconectar, restabelece presença; a permissão de compartilhar precisa de novo clique.
       if (!state.room) return;
+      const roomId = state.room.id;
+      const reconnectVersion = state.joinVersion;
       try {
-        const result = await socketEmit('room:join', { roomId: state.room.id });
-        state.activeSharerId = result.sharerId;
+        const result = await socketEmit('room:join', { roomId });
+        if (!state.room || state.room.id !== roomId || state.joinVersion !== reconnectVersion) return;
+        const videoTrack = state.localStream?.getVideoTracks()[0];
+        if (state.localStream && videoTrack?.readyState === 'live') {
+          // O socket tem um novo ID. Reanunciar a transmissão permite que os
+          // espectadores restabeleçam as conexões WebRTC sem novo getDisplayMedia().
+          const started = await socketEmit('share:start');
+          if (!state.room || state.room.id !== roomId || state.joinVersion !== reconnectVersion) return;
+          if (!started.ok) throw new Error('Não foi possível retomar a transmissão.');
+          state.activeSharerId = socket.id;
+          notify('Transmissão reconectada.', 'success');
+        } else {
+          if (state.localStream) disposeLocalStream();
+          state.activeSharerId = result.sharerId;
+          if (result.sharerId && result.sharerId !== socket.id) socket.emit('viewer:ready');
+        }
         renderVideoState();
-        if (result.sharerId && result.sharerId !== socket.id) socket.emit('viewer:ready');
       } catch (err) {
+        if (!state.room || state.room.id !== roomId || state.joinVersion !== reconnectVersion) return;
         reportError(err);
+        // Não prender a interface num estado 'ao vivo' se a sala não aceitar o rejoin.
         leaveRoom({ notifyServer: false });
       }
     });
