@@ -256,3 +256,89 @@ button{touch-action:manipulation}
   .participants-list{justify-content:flex-start}
 }
 @media (prefers-reduced-motion:reduce){.sidebar{transition:none}}
+
+
+/* NÍTIDA / UI 2.1 — foco na transmissão; somente camada visual */
+:root{--stage-ink:#0a1019;--stage-line:#2c3949;--stage-muted:#9baebf}
+body.ui-in-room .app-grid{grid-template-columns:minmax(0,1fr)}
+body.ui-in-room .sidebar{display:none}
+body.ui-in-room .content{max-width:none;width:100%;padding:24px clamp(18px,2.8vw,46px) 38px}
+.room-panel{display:grid;grid-template-columns:minmax(0,1fr) clamp(205px,20vw,275px);grid-template-areas:'heading heading' 'stage people' 'link people';align-items:start;column-gap:18px;row-gap:15px}
+.room-panel.hidden{display:none!important}
+.room-header{grid-area:heading;display:flex;align-items:center;margin-bottom:0}
+.room-header .back-link{margin-bottom:10px}
+.room-header h1{font-size:clamp(19px,2vw,27px);letter-spacing:-.6px}
+.room-header .eyebrow{display:none}
+.room-header #roomDescription{display:none}
+.room-link-bar{grid-area:link;margin:0;background:transparent;border:1px solid #2a3c4b;padding:9px 12px;border-radius:11px}
+.room-link-copy strong{color:#aabac7}
+.room-link-bar .btn{min-height:35px}
+.video-stage{grid-area:stage;width:100%;margin:0;aspect-ratio:16/9;min-height:min(360px,40vh);background:#060b13;border:1px solid #33495b;box-shadow:none;border-radius:16px;isolation:isolate}
+.video-stage:before{opacity:.35}
+.video-corner-label{left:15px;top:15px;background:#08131bc9;letter-spacing:.8px}
+.stage-fullscreen{top:14px;right:14px;width:36px;height:34px;background:#07121dc9}
+.room-people{grid-area:people;display:flex;align-items:stretch;flex-direction:column;gap:16px;margin:0;min-height:265px;border:1px solid #2a3d4e;border-radius:15px;background:#111e2b;padding:19px 15px}
+.room-people h3{font-size:15px;margin:0 0 5px}
+.room-people p{font-size:11px;line-height:1.5}
+.participants-list{display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;gap:8px;width:100%}
+.participant-chip{width:100%;min-height:40px;background:#172736;border:1px solid #2a4456;border-radius:10px;gap:9px;padding:10px 12px;font-size:12px}
+.participant-chip span{overflow-wrap:anywhere}
+.participant-chip .chip-live{margin-left:auto;font-size:9px}
+.stream-controls{position:absolute;z-index:6;bottom:12px;left:12px;right:12px;margin:0;padding:12px 14px;border-radius:13px;border:1px solid #4a6474;background:#0b1724ed;box-shadow:0 12px 50px #0009;backdrop-filter:blur(18px);transition:transform .25s ease,opacity .25s ease,visibility .25s ease}
+.stream-controls:not(.is-visible){transform:translateY(calc(100% + 23px));opacity:0;visibility:hidden;pointer-events:none}
+.stream-controls:focus-within{transform:none!important;opacity:1!important;visibility:visible!important;pointer-events:auto!important}
+.stage-toolbar-tools{display:flex;gap:8px;justify-content:flex-end;margin-bottom:7px}
+.stage-tool-button{background:#1e3041;border:1px solid #35546b;color:#e0edf6;border-radius:8px;padding:8px 11px;font-size:11px;cursor:pointer}
+.stage-tool-button[aria-expanded="true"]{background:#28546a;border-color:#4792af}
+.stream-controls .controls-heading{display:none}
+.stream-controls .settings-grid{display:none;gap:11px;padding:12px 0;border-top:1px solid #314655}
+.stream-controls.settings-open .settings-grid{display:grid}
+.stream-controls .settings-actions{margin:6px 0 0;gap:12px}
+.stream-controls .settings-actions .btn{min-height:40px}
+.stream-controls .settings-actions p{font-size:10px;line-height:1.4;max-width:440px}
+.stream-controls .stats-row{display:none;grid-template-columns:repeat(4,minmax(0,1fr));margin:11px 0 0;padding:8px 0}
+.stream-controls.details-open .stats-row{display:grid}
+.stream-controls .stats-row strong{font-size:13px}
+.stream-controls .audio-setting{margin-top:18px}
+.stream-controls .setting-field select{min-height:42px}
+.video-stage:focus-visible{outline:2px solid #87cee7;outline-offset:2px}
+.video-stage .audio-unlock{bottom:104px}
+.social-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.social-tab{min-height:38px;text-align:left;border:1px solid #2e4658;border-radius:9px;background:#142536;color:#a9c1cf;font-size:11px;font-weight:700;padding:9px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:5px}
+.social-tab.active{background:#224356;color:#ddf6ff;border-color:#49788d}
+.social-tab .pill-count{font-size:10px;min-width:21px;text-align:center}
+.social-tab-content{min-height:150px}
+.social-tab-content.hidden{display:none!important}
+.social-hint{color:#a3b7c4;font-size:12px;line-height:1.5;margin:0 0 14px}
+@media(max-width:900px){
+ body.ui-in-room .content{padding:15px 12px calc(92px + env(safe-area-inset-bottom))}
+ .room-panel{grid-template-columns:minmax(0,1fr);grid-template-areas:'heading' 'stage' 'people' 'link';row-gap:12px}
+ .room-header{gap:10px;flex-direction:row;flex-wrap:wrap}
+ .room-header h1{font-size:22px}
+ .video-stage{aspect-ratio:16/10;min-height:210px;border-radius:12px}
+ .room-people{min-height:0;padding:14px}
+ .participants-list{flex-direction:row;flex-wrap:wrap;gap:7px}
+ .participant-chip{width:auto;min-width:110px;font-size:11px}
+ .stream-controls{bottom:7px;left:7px;right:7px;padding:9px}
+ .stream-controls .settings-actions{flex-direction:row;align-items:center;flex-wrap:wrap}
+ .stream-controls .settings-actions .btn{width:auto;min-height:42px}
+ .stream-controls .settings-actions p{display:none}
+ .stream-controls .stats-row{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .stream-controls .stats-row div{padding:8px}
+ .stream-controls .settings-grid{grid-template-columns:1fr}
+ .stream-controls .audio-setting{margin-top:0}
+ .stage-tool-button{padding:7px 9px}
+ .room-link-bar{flex-wrap:wrap}
+ .room-link-copy{flex:1 1 160px}
+ .room-link-bar .btn{width:auto;margin:0}
+}
+@media(max-width:410px){
+ .room-header h1{font-size:19px}
+ .room-header .live-tag{font-size:8px;padding:5px 7px}
+ .video-stage{aspect-ratio:4/3}
+ .stream-controls .settings-actions .btn{font-size:11px}
+ .stage-toolbar-tools{justify-content:space-between}
+}
+@media(prefers-reduced-motion:reduce){.stream-controls{transition:none}}
+
+@media(max-width:850px){body.ui-in-room .mobile-nav{display:none}body.ui-in-room .content{padding-bottom:24px}}

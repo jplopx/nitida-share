@@ -61,3 +61,67 @@
   });
   syncUI();
 })();
+
+
+/* Nítida UI 2.1: abas sociais e controles de vídeo. Não altera WebRTC ou sockets. */
+(() => {
+  'use strict';
+  const byId = id => document.getElementById(id);
+  const room = byId('roomPanel');
+  const stage = byId('videoStage');
+  const toolbar = byId('roomToolbar');
+  const settings = byId('toggleSettingsButton');
+  const details = byId('toggleDetailsButton');
+  if (!room || !stage || !toolbar) return;
+  stage.appendChild(toolbar);
+  let hideTimer;
+  const isSharing = () => !byId('roomLiveDot')?.classList.contains('on') ? false : true;
+  function reveal() {
+    toolbar.classList.add('is-visible');
+    clearTimeout(hideTimer);
+    if (!isSharing() || toolbar.classList.contains('settings-open') || toolbar.classList.contains('details-open')) return;
+    hideTimer = setTimeout(() => {
+      if (!toolbar.matches(':hover') && !toolbar.matches(':focus-within')) toolbar.classList.remove('is-visible');
+    }, 3600);
+  }
+  function togglePanel(name, button) {
+    const opened = toolbar.classList.toggle(name);
+    button.setAttribute('aria-expanded', String(opened));
+    reveal();
+  }
+  settings?.addEventListener('click', () => togglePanel('settings-open', settings));
+  details?.addEventListener('click', () => togglePanel('details-open', details));
+  stage.addEventListener('pointermove', reveal, { passive: true });
+  stage.addEventListener('pointerenter', reveal);
+  stage.addEventListener('pointerdown', reveal);
+  stage.addEventListener('focusin', reveal);
+  stage.addEventListener('keydown', event => {
+    reveal();
+    if (event.key === 'Escape') {
+      toolbar.classList.remove('settings-open', 'details-open');
+      settings?.setAttribute('aria-expanded', 'false');
+      details?.setAttribute('aria-expanded', 'false');
+      reveal();
+    }
+  });
+  toolbar.addEventListener('pointerleave', reveal);
+  const live = byId('roomLiveDot');
+  if (live) new MutationObserver(reveal).observe(live, { attributes: true, attributeFilter: ['class'] });
+  const roomObserver = new MutationObserver(() => {
+    if (!room.classList.contains('hidden')) reveal();
+    else clearTimeout(hideTimer);
+  });
+  roomObserver.observe(room, { attributes: true, attributeFilter: ['class'] });
+  document.querySelectorAll('[data-social-tab]').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const section = tab.dataset.socialTab;
+      document.querySelectorAll('[data-social-tab]').forEach(button => {
+        const active = button === tab;
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-selected', String(active));
+      });
+      document.querySelectorAll('[data-social-page]').forEach(page => page.classList.toggle('hidden', page.dataset.socialPage !== section));
+    });
+  });
+  reveal();
+})();
